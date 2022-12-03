@@ -39,3 +39,5 @@ require (
 	github.com/liip/sheriff v0.11.1
 	golang.org/x/sys v0.2.0 // indirect
 )
+
+replace github.com/deepch/vdk v0.0.19 => ./vtpl1/vdk
