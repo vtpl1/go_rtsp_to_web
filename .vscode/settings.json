@@ -1,0 +1,15 @@
+{
+    "editor.minimap.enabled": false,
+    "git.confirmSync": false,
+    "git.autofetch": true,
+    "gopls": {
+        "ui.semanticTokens": true,
+        "formatting.gofumpt": true
+    },
+    "[go]": {
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": "golang.go"
+    },
+    "go.coverOnSave": true,
+    "go.testOnSave": true
+}
