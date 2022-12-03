@@ -10,6 +10,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var Storage = NewStreamCore()
+
 // Default stream  type
 const (
 	MSE = iota

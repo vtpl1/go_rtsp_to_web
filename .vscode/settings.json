@@ -10,6 +10,6 @@
         "editor.formatOnSave": false,
         "editor.defaultFormatter": "golang.go"
     },
-    "go.coverOnSave": true,
-    "go.testOnSave": true
+    // "go.coverOnSave": true,
+    // "go.testOnSave": true
 }
