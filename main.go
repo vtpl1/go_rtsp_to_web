@@ -6,11 +6,11 @@ import (
 	"syscall"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	log.WithFields(log.Fields{
+	log.WithFields(logrus.Fields{
 		"module": "main",
 		"func":   "main",
 	}).Info("Server CORE start")
@@ -20,19 +20,19 @@ func main() {
 	signal.Notify(signalChanel, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		sig := <-signalChanel
-		log.WithFields(log.Fields{
+		log.WithFields(logrus.Fields{
 			"module": "main",
 			"func":   "main",
 		}).Info("Server receive signal", sig)
 		done <- true
 	}()
-	log.WithFields(log.Fields{
+	log.WithFields(logrus.Fields{
 		"module": "main",
 		"func":   "main",
 	}).Info("Server start success a wait signals")
 	<-done
 	time.Sleep(2 * time.Second)
-	log.WithFields(log.Fields{
+	log.WithFields(logrus.Fields{
 		"module": "main",
 		"func":   "main",
 	}).Info("Server stop working by signal")
