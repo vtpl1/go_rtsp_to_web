@@ -8,7 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//HTTPAPIServerStreamWebRTC stream video over WebRTC
+// HTTPAPIServerStreamWebRTC stream video over WebRTC
 func HTTPAPIServerStreamWebRTC(c *gin.Context) {
 	requestLogger := log.WithFields(logrus.Fields{
 		"module":  "http_webrtc",
@@ -31,7 +31,7 @@ func HTTPAPIServerStreamWebRTC(c *gin.Context) {
 		}).Errorln(ErrorStreamNotFound.Error())
 		return
 	}
-	
+
 	Storage.StreamChannelRun(c.Param("uuid"), c.Param("channel"))
 	codecs, err := Storage.StreamChannelCodecs(c.Param("uuid"), c.Param("channel"))
 	if err != nil {

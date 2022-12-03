@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//HTTPAPIServerStreamHLSM3U8 send client m3u8 play list
+// HTTPAPIServerStreamHLSM3U8 send client m3u8 play list
 func HTTPAPIServerStreamHLSM3U8(c *gin.Context) {
 	requestLogger := log.WithFields(logrus.Fields{
 		"module":  "http_hls",
@@ -60,7 +60,7 @@ func HTTPAPIServerStreamHLSM3U8(c *gin.Context) {
 	}
 }
 
-//HTTPAPIServerStreamHLSTS send client ts segment
+// HTTPAPIServerStreamHLSTS send client ts segment
 func HTTPAPIServerStreamHLSTS(c *gin.Context) {
 	requestLogger := log.WithFields(logrus.Fields{
 		"module":  "http_hls",

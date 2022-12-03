@@ -6,7 +6,7 @@ import (
 	"github.com/deepch/vdk/av"
 )
 
-//Segment struct
+// Segment struct
 type Segment struct {
 	FPS               int               //Current fps
 	CurrentFragment   *Fragment         //CurrentFragment link
@@ -17,7 +17,7 @@ type Segment struct {
 	Fragment          map[int]*Fragment //Fragment map
 }
 
-//NewSegment func
+// NewSegment func
 func (element *MuxerHLS) NewSegment() *Segment {
 	res := &Segment{
 		Fragment:          make(map[int]*Fragment),
@@ -29,17 +29,17 @@ func (element *MuxerHLS) NewSegment() *Segment {
 	return res
 }
 
-//GetDuration func
+// GetDuration func
 func (element *Segment) GetDuration() time.Duration {
 	return element.Duration
 }
 
-//SetFPS func
+// SetFPS func
 func (element *Segment) SetFPS(fps int) {
 	element.FPS = fps
 }
 
-//WritePacket func
+// WritePacket func
 func (element *Segment) WritePacket(packet *av.Packet) {
 	if element.CurrentFragment == nil || element.CurrentFragment.GetDuration().Milliseconds() >= element.FragmentMS(element.FPS) {
 		if element.CurrentFragment != nil {
@@ -52,12 +52,12 @@ func (element *Segment) WritePacket(packet *av.Packet) {
 	element.CurrentFragment.WritePacket(packet)
 }
 
-//GetFragmentID func
+// GetFragmentID func
 func (element *Segment) GetFragmentID() int {
 	return element.CurrentFragmentID
 }
 
-//Close segment func
+// Close segment func
 func (element *Segment) Close() {
 	element.Finish = true
 	if element.CurrentFragment != nil {
@@ -65,7 +65,7 @@ func (element *Segment) Close() {
 	}
 }
 
-//FragmentMS func
+// FragmentMS func
 func (element *Segment) FragmentMS(fps int) int64 {
 	for i := 6; i >= 1; i-- {
 		if fps%i == 0 {

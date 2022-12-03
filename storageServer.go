@@ -11,7 +11,7 @@ var (
 	DefaultHTTPDir = "web"
 )
 
-//ServerHTTPDir
+// ServerHTTPDir
 func (obj *StorageST) ServerHTTPDir() string {
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
@@ -21,91 +21,91 @@ func (obj *StorageST) ServerHTTPDir() string {
 	return filepath.Clean(obj.Server.HTTPDir)
 }
 
-//ServerHTTPDebug read debug options
+// ServerHTTPDebug read debug options
 func (obj *StorageST) ServerHTTPDebug() bool {
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
 	return obj.Server.HTTPDebug
 }
 
-//ServerLogLevel read debug options
+// ServerLogLevel read debug options
 func (obj *StorageST) ServerLogLevel() logrus.Level {
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
 	return obj.Server.LogLevel
 }
 
-//ServerHTTPDemo read demo options
+// ServerHTTPDemo read demo options
 func (obj *StorageST) ServerHTTPDemo() bool {
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
 	return obj.Server.HTTPDemo
 }
 
-//ServerHTTPLogin read Login options
+// ServerHTTPLogin read Login options
 func (obj *StorageST) ServerHTTPLogin() string {
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
 	return obj.Server.HTTPLogin
 }
 
-//ServerHTTPPassword read Password options
+// ServerHTTPPassword read Password options
 func (obj *StorageST) ServerHTTPPassword() string {
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
 	return obj.Server.HTTPPassword
 }
 
-//ServerHTTPPort read HTTP Port options
+// ServerHTTPPort read HTTP Port options
 func (obj *StorageST) ServerHTTPPort() string {
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
 	return obj.Server.HTTPPort
 }
 
-//ServerRTSPPort read HTTP Port options
+// ServerRTSPPort read HTTP Port options
 func (obj *StorageST) ServerRTSPPort() string {
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
 	return obj.Server.RTSPPort
 }
 
-//ServerHTTPS read HTTPS Port options
+// ServerHTTPS read HTTPS Port options
 func (obj *StorageST) ServerHTTPS() bool {
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
 	return obj.Server.HTTPS
 }
 
-//ServerHTTPSPort read HTTPS Port options
+// ServerHTTPSPort read HTTPS Port options
 func (obj *StorageST) ServerHTTPSPort() string {
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
 	return obj.Server.HTTPSPort
 }
 
-//ServerHTTPSAutoTLSEnable read HTTPS Port options
+// ServerHTTPSAutoTLSEnable read HTTPS Port options
 func (obj *StorageST) ServerHTTPSAutoTLSEnable() bool {
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
 	return obj.Server.HTTPSAutoTLSEnable
 }
 
-//ServerHTTPSAutoTLSName read HTTPS Port options
+// ServerHTTPSAutoTLSName read HTTPS Port options
 func (obj *StorageST) ServerHTTPSAutoTLSName() string {
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
 	return obj.Server.HTTPSAutoTLSName
 }
 
-//ServerHTTPSCert read HTTPS Cert options
+// ServerHTTPSCert read HTTPS Cert options
 func (obj *StorageST) ServerHTTPSCert() string {
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
 	return obj.Server.HTTPSCert
 }
 
-//ServerHTTPSKey read HTTPS Key options
+// ServerHTTPSKey read HTTPS Key options
 func (obj *StorageST) ServerHTTPSKey() string {
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
@@ -133,14 +133,14 @@ func (obj *StorageST) ServerICECredential() string {
 	return obj.Server.ICECredential
 }
 
-//ServerTokenEnable read HTTPS Key options
+// ServerTokenEnable read HTTPS Key options
 func (obj *StorageST) ServerTokenEnable() bool {
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
 	return obj.Server.Token.Enable
 }
 
-//ServerTokenBackend read HTTPS Key options
+// ServerTokenBackend read HTTPS Key options
 func (obj *StorageST) ServerTokenBackend() string {
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
