@@ -6,10 +6,10 @@ import (
 	"io"
 	"time"
 
+	"github.com/deepch/vdk/av"
 	"github.com/deepch/vdk/codec/aacparser"
 	"github.com/deepch/vdk/codec/h264parser"
 	"github.com/deepch/vdk/format/mp4/mp4io"
-	"github.com/vtpl1/vdk/av"
 )
 
 type Demuxer struct {
@@ -361,7 +361,7 @@ func (self *Stream) readPacket() (pkt av.Packet, err error) {
 		err = io.EOF
 		return
 	}
-	// fmt.Println("readPacket", self.sampleIndex)
+	//fmt.Println("readPacket", self.sampleIndex)
 
 	chunkOffset := self.sample.ChunkOffset.Entries[self.chunkIndex]
 	sampleSize := uint32(0)
@@ -383,7 +383,7 @@ func (self *Stream) readPacket() (pkt av.Packet, err error) {
 		}
 	}
 
-	// println("pts/dts", self.ptsEntryIndex, self.dtsEntryIndex)
+	//println("pts/dts", self.ptsEntryIndex, self.dtsEntryIndex)
 	if self.sample.CompositionOffset != nil && len(self.sample.CompositionOffset.Entries) > 0 {
 		cts := int64(self.sample.CompositionOffset.Entries[self.cttsEntryIndex].Offset)
 		pkt.CompositionTime = self.tsToTime(cts)
