@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/deepch/vdk/av"
+	"github.com/vtpl1/vdk/av"
 )
 
 // MuxerHLS struct

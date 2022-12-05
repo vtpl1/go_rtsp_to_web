@@ -3,7 +3,7 @@ package main
 import (
 	"time"
 
-	"github.com/deepch/vdk/av"
+	"github.com/vtpl1/vdk/av"
 )
 
 // Segment struct

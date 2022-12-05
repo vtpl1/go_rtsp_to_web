@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"time"
 
-	"github.com/deepch/vdk/format/ts"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"github.com/vtpl1/vdk/format/ts"
 )
 
 // HTTPAPIServerStreamHLSM3U8 send client m3u8 play list

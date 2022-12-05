@@ -3,12 +3,12 @@ package fmp4
 import (
 	"fmt"
 
-	"github.com/deepch/vdk/av"
-	"github.com/deepch/vdk/codec/aacparser"
-	"github.com/deepch/vdk/codec/h264parser"
-	"github.com/deepch/vdk/codec/opusparser"
-	"github.com/deepch/vdk/format/fmp4/esio"
-	"github.com/deepch/vdk/format/fmp4/fmp4io"
+	"github.com/vtpl1/vdk/av"
+	"github.com/vtpl1/vdk/codec/aacparser"
+	"github.com/vtpl1/vdk/codec/h264parser"
+	"github.com/vtpl1/vdk/codec/opusparser"
+	"github.com/vtpl1/vdk/format/fmp4/esio"
+	"github.com/vtpl1/vdk/format/fmp4/fmp4io"
 )
 
 // Track creates a TRAK atom for this stream

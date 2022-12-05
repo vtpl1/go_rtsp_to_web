@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/deepch/vdk/av"
-	"github.com/deepch/vdk/format/rtmp"
-	"github.com/deepch/vdk/format/rtspv2"
 	"github.com/sirupsen/logrus"
+	"github.com/vtpl1/vdk/av"
+	"github.com/vtpl1/vdk/format/rtmp"
+	"github.com/vtpl1/vdk/format/rtspv2"
 )
 
 // StreamServerRunStreamDo stream run do mux

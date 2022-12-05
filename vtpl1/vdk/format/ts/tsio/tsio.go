@@ -5,7 +5,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/deepch/vdk/utils/bits/pio"
+	"github.com/vtpl1/vdk/utils/bits/pio"
 )
 
 const (

@@ -6,9 +6,9 @@ import (
 	"io"
 	"time"
 
-	"github.com/deepch/vdk/av"
-	"github.com/deepch/vdk/av/avutil"
-	"github.com/deepch/vdk/codec/aacparser"
+	"github.com/vtpl1/vdk/av"
+	"github.com/vtpl1/vdk/av/avutil"
+	"github.com/vtpl1/vdk/codec/aacparser"
 )
 
 type Muxer struct {

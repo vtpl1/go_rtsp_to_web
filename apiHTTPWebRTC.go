@@ -3,9 +3,9 @@ package main
 import (
 	"time"
 
-	webrtc "github.com/deepch/vdk/format/webrtcv3"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	webrtc "github.com/vtpl1/vdk/format/webrtcv3"
 )
 
 // HTTPAPIServerStreamWebRTC stream video over WebRTC

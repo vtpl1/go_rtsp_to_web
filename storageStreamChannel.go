@@ -3,9 +3,9 @@ package main
 import (
 	"time"
 
-	"github.com/deepch/vdk/av"
 	"github.com/imdario/mergo"
 	"github.com/sirupsen/logrus"
+	"github.com/vtpl1/vdk/av"
 )
 
 // Default streams signals
