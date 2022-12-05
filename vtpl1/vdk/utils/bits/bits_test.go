@@ -1,10 +1,177 @@
 package bits
 
-import (
-	"bytes"
-	"testing"
-)
+import "testing"
 
+func TestReader_ReadBits64(t *testing.T) {
+	type args struct {
+		n int
+	}
+	tests := []struct {
+		name     string
+		self     *Reader
+		args     args
+		wantBits uint64
+		wantErr  bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotBits, err := tt.self.ReadBits64(tt.args.n)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Reader.ReadBits64() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotBits != tt.wantBits {
+				t.Errorf("Reader.ReadBits64() = %v, want %v", gotBits, tt.wantBits)
+			}
+		})
+	}
+}
+
+func TestReader_ReadBits(t *testing.T) {
+	type args struct {
+		n int
+	}
+	tests := []struct {
+		name     string
+		self     *Reader
+		args     args
+		wantBits uint
+		wantErr  bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotBits, err := tt.self.ReadBits(tt.args.n)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Reader.ReadBits() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotBits != tt.wantBits {
+				t.Errorf("Reader.ReadBits() = %v, want %v", gotBits, tt.wantBits)
+			}
+		})
+	}
+}
+
+func TestReader_Read(t *testing.T) {
+	type args struct {
+		p []byte
+	}
+	tests := []struct {
+		name    string
+		self    *Reader
+		args    args
+		wantN   int
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotN, err := tt.self.Read(tt.args.p)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Reader.Read() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotN != tt.wantN {
+				t.Errorf("Reader.Read() = %v, want %v", gotN, tt.wantN)
+			}
+		})
+	}
+}
+
+func TestWriter_WriteBits64(t *testing.T) {
+	type args struct {
+		bits uint64
+		n    int
+	}
+	tests := []struct {
+		name    string
+		self    *Writer
+		args    args
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.self.WriteBits64(tt.args.bits, tt.args.n); (err != nil) != tt.wantErr {
+				t.Errorf("Writer.WriteBits64() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestWriter_WriteBits(t *testing.T) {
+	type args struct {
+		bits uint
+		n    int
+	}
+	tests := []struct {
+		name    string
+		self    *Writer
+		args    args
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.self.WriteBits(tt.args.bits, tt.args.n); (err != nil) != tt.wantErr {
+				t.Errorf("Writer.WriteBits() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestWriter_Write(t *testing.T) {
+	type args struct {
+		p []byte
+	}
+	tests := []struct {
+		name    string
+		self    *Writer
+		args    args
+		wantN   int
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotN, err := tt.self.Write(tt.args.p)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Writer.Write() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotN != tt.wantN {
+				t.Errorf("Writer.Write() = %v, want %v", gotN, tt.wantN)
+			}
+		})
+	}
+}
+
+func TestWriter_FlushBits(t *testing.T) {
+	tests := []struct {
+		name    string
+		self    *Writer
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.self.FlushBits(); (err != nil) != tt.wantErr {
+				t.Errorf("Writer.FlushBits() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+/*
 func TestBits(t *testing.T) {
 	rdata := []byte{0xf3, 0xb3, 0x45, 0x60}
 	rbuf := bytes.NewReader(rdata[:])
@@ -49,3 +216,174 @@ func TestBits(t *testing.T) {
 	// 	t.FailNow()
 	// }
 }
+
+func TestReader_ReadBits64(t *testing.T) {
+	type args struct {
+		n int
+	}
+	tests := []struct {
+		name     string
+		self     *Reader
+		args     args
+		wantBits uint64
+		wantErr  bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotBits, err := tt.self.ReadBits64(tt.args.n)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Reader.ReadBits64() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotBits != tt.wantBits {
+				t.Errorf("Reader.ReadBits64() = %v, want %v", gotBits, tt.wantBits)
+			}
+		})
+	}
+}
+
+func TestReader_ReadBits(t *testing.T) {
+	type args struct {
+		n int
+	}
+	tests := []struct {
+		name     string
+		self     *Reader
+		args     args
+		wantBits uint
+		wantErr  bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotBits, err := tt.self.ReadBits(tt.args.n)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Reader.ReadBits() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotBits != tt.wantBits {
+				t.Errorf("Reader.ReadBits() = %v, want %v", gotBits, tt.wantBits)
+			}
+		})
+	}
+}
+
+func TestReader_Read(t *testing.T) {
+	type args struct {
+		p []byte
+	}
+	tests := []struct {
+		name    string
+		self    *Reader
+		args    args
+		wantN   int
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotN, err := tt.self.Read(tt.args.p)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Reader.Read() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotN != tt.wantN {
+				t.Errorf("Reader.Read() = %v, want %v", gotN, tt.wantN)
+			}
+		})
+	}
+}
+
+func TestWriter_WriteBits64(t *testing.T) {
+	type args struct {
+		bits uint64
+		n    int
+	}
+	tests := []struct {
+		name    string
+		self    *Writer
+		args    args
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.self.WriteBits64(tt.args.bits, tt.args.n); (err != nil) != tt.wantErr {
+				t.Errorf("Writer.WriteBits64() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestWriter_WriteBits(t *testing.T) {
+	type args struct {
+		bits uint
+		n    int
+	}
+	tests := []struct {
+		name    string
+		self    *Writer
+		args    args
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.self.WriteBits(tt.args.bits, tt.args.n); (err != nil) != tt.wantErr {
+				t.Errorf("Writer.WriteBits() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestWriter_Write(t *testing.T) {
+	type args struct {
+		p []byte
+	}
+	tests := []struct {
+		name    string
+		self    *Writer
+		args    args
+		wantN   int
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotN, err := tt.self.Write(tt.args.p)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Writer.Write() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotN != tt.wantN {
+				t.Errorf("Writer.Write() = %v, want %v", gotN, tt.wantN)
+			}
+		})
+	}
+}
+
+func TestWriter_FlushBits(t *testing.T) {
+	tests := []struct {
+		name    string
+		self    *Writer
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.self.FlushBits(); (err != nil) != tt.wantErr {
+				t.Errorf("Writer.FlushBits() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+*/
