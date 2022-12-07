@@ -28,3 +28,4 @@ func main() {
 	time.Sleep(2 * time.Second)
 	utils.Logger.Info("Server stopped working due to signal")
 }
+

@@ -30,15 +30,18 @@ const (
 	SignalStreamRTPStop = iota
 	SignalCodecUpdate
 )
+
 const (
 	VIDEO = "video"
 	AUDIO = "audio"
 )
+
 const (
 	RTPHeaderSize      = 12
 	RTCPSenderReport   = 200
 	RTCPReceiverReport = 201
 )
+
 const (
 	DESCRIBE = "DESCRIBE"
 	OPTIONS  = "OPTIONS"
@@ -56,6 +59,7 @@ type RTSPClientOptions struct {
 	OutgoingProxy      bool
 	InsecureSkipVerify bool
 }
+
 type RTSPClient struct {
 	control             string
 	seq                 int
@@ -106,6 +110,16 @@ func (client *RTSPClient) Println(v ...interface{}) {
 		fmt.Println(v...)
 	}
 }
+
+func (client *RTSPClient) Close() {
+	if client.conn != nil {
+		client.conn.SetDeadline(time.Now().Add(time.Second))
+		client.request(TEARDOWN, nil, client.control, false, true)
+		err := client.conn.Close()
+		client.Println("RTSP Client Close", err)
+	}
+}
+
 func (client *RTSPClient) parseURL(rawURL string) error {
 	l, err := url.Parse(rawURL)
 	if err != nil {
@@ -126,6 +140,7 @@ func (client *RTSPClient) parseURL(rawURL string) error {
 	client.control = l.String()
 	return nil
 }
+
 func (client *RTSPClient) request(method string, customHeaders map[string]string, uri string, one bool, nores bool) (err error) {
 	err = client.conn.SetDeadline(time.Now().Add(client.options.ReadWriteTimeout))
 	if err != nil {
@@ -270,6 +285,7 @@ func (client *RTSPClient) request(method string, customHeaders map[string]string
 	}
 	return
 }
+
 func stringInBetween(str string, start string, end string) (result string) {
 	s := strings.Index(str, start)
 	if s == -1 {
@@ -283,6 +299,7 @@ func stringInBetween(str string, start string, end string) (result string) {
 	str = str[:e]
 	return str
 }
+
 func (client *RTSPClient) startStream() {
 	defer func() {
 		client.Signals <- SignalStreamRTPStop
@@ -382,6 +399,7 @@ func (client *RTSPClient) startStream() {
 		}
 	}
 }
+
 func (client *RTSPClient) createDigest(method string, uri string) string {
 	md5UserRealmPwd := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s:%s:%s", client.username, client.realm, client.password))))
 	md5MethodURL := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s:%s", method, uri))))
@@ -396,10 +414,12 @@ func binSize(val int) []byte {
 	binary.BigEndian.PutUint32(buf, uint32(val))
 	return buf
 }
+
 func isRTCPPacket(content []byte) bool {
 	rtcpPacketType := content[5]
 	return rtcpPacketType == RTCPSenderReport || rtcpPacketType == RTCPReceiverReport
 }
+
 func Dial(options RTSPClientOptions) (*RTSPClient, error) {
 	client := &RTSPClient{
 		headers:             make(map[string]string),
@@ -533,6 +553,7 @@ func Dial(options RTSPClientOptions) (*RTSPClient, error) {
 	go client.startStream()
 	return client, nil
 }
+
 func (client *RTSPClient) ControlTrack(track string) string {
 	if strings.Contains(track, "rtsp://") {
 		return track
@@ -542,6 +563,7 @@ func (client *RTSPClient) ControlTrack(track string) string {
 	}
 	return client.control + track
 }
+
 func (client *RTSPClient) RTPDemuxer(payloadRAW *[]byte) ([]*av.Packet, bool) {
 	content := *payloadRAW
 	firstByte := content[4]
@@ -820,6 +842,7 @@ func (client *RTSPClient) RTPDemuxer(payloadRAW *[]byte) ([]*av.Packet, bool) {
 	}
 	return nil, false
 }
+
 func (client *RTSPClient) CodecUpdateSPS(val []byte) {
 	if client.videoCodec != av.H264 && client.videoCodec != av.H265 {
 		return
@@ -859,6 +882,7 @@ func (client *RTSPClient) CodecUpdateSPS(val []byte) {
 	}
 	client.Signals <- SignalCodecUpdate
 }
+
 func (client *RTSPClient) CodecUpdatePPS(val []byte) {
 	if client.videoCodec != av.H264 && client.videoCodec != av.H265 {
 		return
@@ -898,6 +922,7 @@ func (client *RTSPClient) CodecUpdatePPS(val []byte) {
 	}
 	client.Signals <- SignalCodecUpdate
 }
+
 func (client *RTSPClient) CodecUpdateVPS(val []byte) {
 	if client.videoCodec != av.H265 {
 		return
