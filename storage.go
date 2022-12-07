@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
+	"github.com/imdario/mergo"
+	"github.com/vtpl1/go_rtsp_to_web/utils"
 	"github.com/vtpl1/vdk/av"
 )
 
@@ -35,8 +35,8 @@ type ChannelST struct {
 	signals            chan int
 	// hlsSegmentBuffer   map[int]SegmentOld
 	// hlsSegmentNumber   int
-	clients            map[string]ClientST
-	ack                time.Time
+	clients map[string]ClientST
+	ack     time.Time
 	// hlsMuxer           *MuxerHLS `json:"-"`
 }
 
@@ -47,29 +47,50 @@ type StreamST struct {
 }
 
 type StorageST struct {
-	Streams map[string]StreamST `json:"streams,omitempty" groups:"api,config"`
+	Streams         map[string]StreamST `json:"streams,omitempty" groups:"api,config"`
+	ChannelDefaults ChannelST           `json:"channel_defaults,omitempty" groups:"api,config"`
 }
 
 // Command line flag global variables
 var debug bool
-var configFile string
-var Storage = NewStreamCore()
+
+var (
+	configFile string
+	Storage    = NewStreamCore()
+)
 
 func NewStreamCore() *StorageST {
-	logger := log.WithFields(logrus.Fields{
-		"module": "config",
-		"func":   "NewStreamCore",
-		"call":   "ReadFile",
-	})
+
 	flag.BoolVar(&debug, "debug", true, "set debug mode")
 	flag.StringVar(&configFile, "config", "config/config.json", "config patch (/etc/server/config.json or config.json)")
 	flag.Parse()
 	var tmp StorageST
 	data, err := ioutil.ReadFile(configFile)
-	if err == nil {
-		logger.Errorln(err.Error())
+	if err != nil {
+		utils.Logger.Error(err.Error())
 		os.Exit(1)
 	}
 	err = json.Unmarshal(data, &tmp)
+	if err != nil {
+		utils.Logger.Error(err.Error())
+		os.Exit(1)
+	}
+	// debug = tmp.Server.Debug
+	for i, i2 := range tmp.Streams {
+		for i3, i4 := range i2.Channels {
+			channel := tmp.ChannelDefaults
+			err = mergo.Merge(&channel, i4)
+			if err != nil {
+				utils.Logger.Error(err.Error())
+				os.Exit(1)
+			}
+			channel.clients = make(map[string]ClientST)
+			channel.ack = time.Now().Add(-255 * time.Hour)
+			// channel.hlsSegmentBuffer = make(map[int]SegmentOld)
+			channel.signals = make(chan int, 100)
+			i2.Channels[i3] = channel
+		}
+		tmp.Streams[i] = i2
+	}
 	return &tmp
 }

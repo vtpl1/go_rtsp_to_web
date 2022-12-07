@@ -6,36 +6,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
+	"github.com/vtpl1/go_rtsp_to_web/utils"
 )
 
-var logger *logrus.Entry
-
-func init() {
-	// Log as JSON instead of the default ASCII formatter.
-	// log.SetFormatter(&log.JSONFormatter{})
-
-	log.SetFormatter(&logrus.TextFormatter{
-		FullTimestamp: true,
-		ForceColors:   true,
-		DisableColors: false,
-	})
-
-	// Output to stdout instead of the default stderr
-	// Can be any io.Writer, see below for File example
-	log.SetOutput(os.Stdout)
-
-	// Only log the warning severity or above.
-	log.SetLevel(log.DebugLevel)
-}
-
 func main() {
-	logger := log.WithFields(logrus.Fields{
-		"module": "main",
-		"func":   "main",
-	})
-	logger.Info("Server CORE start")
+	utils.InitializeLogger()
+	utils.Logger.Info("Server CORE start")
 
 	go Storage.StreamChannelRunAll()
 
@@ -44,11 +20,11 @@ func main() {
 	signal.Notify(signalChanel, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		sig := <-signalChanel
-		logger.Info("Server received signal", sig)
+		utils.Logger.Info("Server received signal", sig)
 		done <- true
 	}()
-	logger.Info("Server started and waiting for signals")
+	utils.Logger.Info("Server started and waiting for signals")
 	<-done
 	time.Sleep(2 * time.Second)
-	logger.Info("Server stopped working due to signal")
+	utils.Logger.Info("Server stopped working due to signal")
 }

@@ -1,7 +1,9 @@
 package main
 
+import "github.com/vtpl1/go_rtsp_to_web/utils"
+
 func (obj *StorageST) StreamChannelRunAll() {
-	logger.Info("Here")
+	utils.Logger.Info("Here")
 	for k, v := range obj.Streams {
 		for ks, vs := range v.Channels {
 			if !vs.OnDemand {
