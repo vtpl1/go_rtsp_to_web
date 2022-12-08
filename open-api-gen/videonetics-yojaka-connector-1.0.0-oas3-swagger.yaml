@@ -1,0 +1,209 @@
+openapi: 3.0.0
+info:
+  description: Yojaka Connector Plugin
+  version: 1.0.0-oas3
+  title: Yojaka Connector Plugin
+tags:
+  - name: freshyojaka-api-controller
+    description: the freshyojaka API
+  - name: registeryojaka-api-controller
+    description: the registeryojaka API
+paths:
+  /freshyojaka:
+    post:
+      tags:
+        - Yojaka
+      summary: Creates a Roles to the platfrom.
+      description: Creates a VCPaaS provider to the platfrom.
+      operationId: freshyojakaPost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FreshYojakaRequestModel'
+        description: body
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YojakaPostResponse'
+        '201':
+          description: Creates a Roles to the platfrom.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YojakaPostResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YojakaPostResponse'
+        '501':
+          description: not implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YojakaPostResponse'
+      deprecated: false
+  /registeryojaka:
+    post:
+      tags:
+        - Yojaka
+      summary: Creates a Roles to the platfrom.
+      description: Creates a VCPaaS provider to the platfrom.
+      operationId: registeryojakaPost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterYojakaRequestModel'
+        description: body
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YojakaPostResponse'
+        '201':
+          description: Creates a Roles to the platfrom.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YojakaPostResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YojakaPostResponse'
+        '501':
+          description: not implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YojakaPostResponse'
+      deprecated: false
+servers:
+  - url: //localhost:18080
+components:
+  schemas:
+    FreshYojakaModel:
+      type: object
+      properties:
+        cameraCount:
+          type: integer
+          format: int32
+        customercertificate:
+          $ref: '#/components/schemas/QrCodeModel'
+        id:
+          type: string
+        ip:
+          type: array
+          items:
+            type: string
+        yojakaname:
+          type: string
+      title: FreshYojakaModel
+    FreshYojakaRequestModel:
+      type: object
+      properties:
+        command:
+          type: string
+        deviceIp:
+          type: string
+      title: FreshYojakaRequestModel
+    MessageServiseDetailsModel:
+      type: object
+      properties:
+        domainAddress:
+          type: string
+        password:
+          type: string
+        username:
+          type: string
+      title: MessageServiseDetailsModel
+    QrCodeModel:
+      type: object
+      properties:
+        customerId:
+          type: string
+        expiryTimeStamp:
+          type: number
+        id:
+          type: string
+        messageServiceDetails:
+          $ref: '#/components/schemas/MessageServiseDetailsModel'
+        serviceUrl:
+          $ref: '#/components/schemas/UrlModel'
+        userId:
+          type: string
+      title: QrCodeModel
+    RegisterYojakaRequestModel:
+      type: object
+      properties:
+        command:
+          type: string
+        customercertificate:
+          $ref: '#/components/schemas/QrCodeModel'
+        deviceIp:
+          type: string
+        name:
+          type: string
+        uuid:
+          type: string
+      title: RegisterYojakaRequestModel
+    ServerSessionKeyModel:
+      type: object
+      properties:
+        timestamp:
+          type: integer
+          format: int64
+        token:
+          type: string
+      title: ServerSessionKeyModel
+    UrlModel:
+      type: object
+      properties:
+        deviceStatusService:
+          type: string
+        masterService:
+          type: string
+        recordingService:
+          type: string
+      title: UrlModel
+    YojakaPostResponse:
+      type: object
+      properties:
+        httpCode:
+          type: integer
+          format: int32
+        id:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FreshYojakaModel'
+        message:
+          type: string
+        responseCode:
+          type: integer
+          format: int32
+        serverSessionKey:
+          $ref: '#/components/schemas/ServerSessionKeyModel'
+      title: YojakaPostResponse
