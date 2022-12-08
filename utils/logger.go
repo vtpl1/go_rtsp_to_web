@@ -28,6 +28,6 @@ func InitializeLogger() {
 		zapcore.NewCore(fileEncoder, writer, defaultLogLevel),
 		zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), defaultLogLevel),
 	)
-	logger := zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
+	logger := zap.New(core, zap.AddCaller() /*, zap.AddStacktrace(zapcore.ErrorLevel)*/)
 	Logger = logger.Sugar()
 }
