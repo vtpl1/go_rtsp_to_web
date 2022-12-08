@@ -115,7 +115,7 @@ type StorageST struct {
 
 var (
 	configFile string
-	Storage    = NewStreamCore()
+	Storage *StorageST
 )
 
 // SegmentOld HLS cache section

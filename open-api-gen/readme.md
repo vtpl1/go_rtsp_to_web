@@ -9,3 +9,9 @@ java -jar openapi-generator-cli.jar generate -i videonetics-yojaka-connector-1.0
     --additional-properties=outputAsLibrary=true \
     --additional-properties=router=chi
 
+java -jar openapi-generator-cli.jar generate -i videonetics-yojaka-connector-1.0.0-oas3-swagger.yaml ^
+    -g go-server ^
+    -o out/openapi ^
+    --additional-properties=packageName=openapi ^
+    --additional-properties=router=chi ^
+    --additional-properties=outputAsLibrary=true
