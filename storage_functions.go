@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"math"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"sync"
@@ -259,6 +260,56 @@ func (obj *StorageST) HlsMuxerWritePacket(uuid string, channelID string, packet 
 			channelTmp.hlsMuxer.WritePacket(packet)
 		}
 	}
+}
+
+// ServerHTTPDebug read debug options
+func (obj *StorageST) ServerHTTPDebug() bool {
+	obj.mutex.RLock()
+	defer obj.mutex.RUnlock()
+	return obj.Server.HTTPDebug
+}
+
+// ServerHTTPPort read HTTP Port options
+func (obj *StorageST) ServerHTTPPort() string {
+	obj.mutex.RLock()
+	defer obj.mutex.RUnlock()
+	return obj.Server.HTTPPort
+}
+
+// ServerHTTPLogin read Login options
+func (obj *StorageST) ServerHTTPLogin() string {
+	obj.mutex.RLock()
+	defer obj.mutex.RUnlock()
+	return obj.Server.HTTPLogin
+}
+
+// ServerHTTPPassword read Password options
+func (obj *StorageST) ServerHTTPPassword() string {
+	obj.mutex.RLock()
+	defer obj.mutex.RUnlock()
+	return obj.Server.HTTPPassword
+}
+
+// ServerHTTPDemo read demo options
+func (obj *StorageST) ServerHTTPDemo() bool {
+	obj.mutex.RLock()
+	defer obj.mutex.RUnlock()
+	return obj.Server.HTTPDemo
+}
+
+var (
+	//Default www static file dir
+	DefaultHTTPDir = "web"
+)
+
+// ServerHTTPDir
+func (obj *StorageST) ServerHTTPDir() string {
+	obj.mutex.RLock()
+	defer obj.mutex.RUnlock()
+	if filepath.Clean(obj.Server.HTTPDir) == "." {
+		return DefaultHTTPDir
+	}
+	return filepath.Clean(obj.Server.HTTPDir)
 }
 
 // NewHLSMuxer Segments

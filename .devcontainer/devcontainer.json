@@ -21,7 +21,8 @@
 				"go.gopath": "/go"
 			},
 			"extensions": [
-				"Gruntfuggly.todo-tree"
+				"Gruntfuggly.todo-tree",
+				"wmaurer.change-case"
 			]
 		}
 	},
