@@ -1,4 +1,4 @@
-package main
+package datamodel
 
 import (
 	"context"
@@ -310,6 +310,48 @@ func (obj *StorageST) ServerHTTPDir() string {
 		return DefaultHTTPDir
 	}
 	return filepath.Clean(obj.Server.HTTPDir)
+}
+
+// ServerHTTPS read HTTPS Port options
+func (obj *StorageST) ServerHTTPS() bool {
+	obj.mutex.RLock()
+	defer obj.mutex.RUnlock()
+	return obj.Server.HTTPS
+}
+
+// ServerHTTPSAutoTLSEnable read HTTPS Port options
+func (obj *StorageST) ServerHTTPSAutoTLSEnable() bool {
+	obj.mutex.RLock()
+	defer obj.mutex.RUnlock()
+	return obj.Server.HTTPSAutoTLSEnable
+}
+
+// ServerHTTPSAutoTLSName read HTTPS Port options
+func (obj *StorageST) ServerHTTPSAutoTLSName() string {
+	obj.mutex.RLock()
+	defer obj.mutex.RUnlock()
+	return obj.Server.HTTPSAutoTLSName
+}
+
+// ServerHTTPSCert read HTTPS Cert options
+func (obj *StorageST) ServerHTTPSCert() string {
+	obj.mutex.RLock()
+	defer obj.mutex.RUnlock()
+	return obj.Server.HTTPSCert
+}
+
+// ServerHTTPSKey read HTTPS Key options
+func (obj *StorageST) ServerHTTPSKey() string {
+	obj.mutex.RLock()
+	defer obj.mutex.RUnlock()
+	return obj.Server.HTTPSKey
+}
+
+// ServerHTTPSPort read HTTPS Port options
+func (obj *StorageST) ServerHTTPSPort() string {
+	obj.mutex.RLock()
+	defer obj.mutex.RUnlock()
+	return obj.Server.HTTPSPort
 }
 
 // NewHLSMuxer Segments

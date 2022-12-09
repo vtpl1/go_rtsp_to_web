@@ -21,7 +21,7 @@ func InitializeLogger() {
 		MaxSize:    10, // megabytes
 		MaxBackups: 3,
 		MaxAge:     28, // days
-	  })
+	})
 	// writer := zapcore.AddSync(logFile)
 	defaultLogLevel := zapcore.DebugLevel
 	core := zapcore.NewTee(

@@ -7,12 +7,15 @@ import (
 	"time"
 
 	// openapi "github.com/vtpl1/go_rtsp_to_web/openapi/go"
+	"github.com/vtpl1/go_rtsp_to_web/datamodel"
 	"github.com/vtpl1/go_rtsp_to_web/utils"
 )
 
 func main() {
 	utils.InitializeLogger()
 	utils.Logger.Info("Server CORE start")
+	datamodel.Storage = datamodel.NewStreamCore()
+
 	// YojakaApiService := openapi.NewYojakaApiService()
 	// YojakaApiController := openapi.NewYojakaApiController(YojakaApiService)
 
@@ -20,8 +23,8 @@ func main() {
 	// go http.ListenAndServe(":8080", router)
 
 	go HTTPAPIServer()
-	Storage = NewStreamCore()
-	go Storage.StreamChannelRunAll()
+
+	go datamodel.Storage.StreamChannelRunAll()
 
 	signalChanel := make(chan os.Signal, 1)
 	done := make(chan bool, 1)

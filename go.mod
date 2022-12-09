@@ -3,6 +3,7 @@ module github.com/vtpl1/go_rtsp_to_web
 go 1.19
 
 require (
+	github.com/gin-gonic/autotls v0.0.5
 	github.com/gin-gonic/gin v1.8.1
 	github.com/imdario/mergo v0.3.13
 	github.com/vtpl1/vdk v0.0.0-00010101000000-000000000000
@@ -25,6 +26,7 @@ require (
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	golang.org/x/crypto v0.4.0 // indirect
 	golang.org/x/net v0.4.0 // indirect
+	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect
 	golang.org/x/text v0.5.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect

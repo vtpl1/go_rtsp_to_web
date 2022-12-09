@@ -1,4 +1,4 @@
-package main
+package datamodel
 
 import (
 	"context"
@@ -115,7 +115,7 @@ type StorageST struct {
 
 var (
 	configFile string
-	Storage *StorageST
+	Storage    *StorageST
 )
 
 // SegmentOld HLS cache section
@@ -142,7 +142,6 @@ type Segment struct {
 	Time              time.Time         //Realtime EXT-X-PROGRAM-DATE-TIME
 	Fragment          map[int]*Fragment //Fragment map
 }
-
 
 // MuxerHLS struct
 type MuxerHLS struct {
