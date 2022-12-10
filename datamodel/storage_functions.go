@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
-	"io/ioutil"
 	"math"
 	"os"
 	"path/filepath"
@@ -13,7 +12,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hashicorp/go-version"
 	"github.com/imdario/mergo"
+	"github.com/liip/sheriff"
 	"github.com/vtpl1/go_rtsp_to_web/utils"
 	"github.com/vtpl1/vdk/av"
 )
@@ -24,7 +25,7 @@ func NewStreamCore() *StorageST {
 	flag.Parse()
 	var tmp StorageST
 	tmp.mutex = &sync.RWMutex{}
-	data, err := ioutil.ReadFile(configFile)
+	data, err := os.ReadFile(configFile)
 	if err != nil {
 		utils.Logger.Error(err.Error())
 		os.Exit(1)
@@ -146,7 +147,7 @@ func (obj *StorageST) ClientHas(streamID string, channelID string) bool {
 	if !ok {
 		return false
 	}
-	if time.Now().Sub(channelTmp.ack).Seconds() > 30 {
+	if time.Since(channelTmp.ack).Seconds() > 30 {
 		return false
 	}
 	return true
@@ -269,6 +270,13 @@ func (obj *StorageST) ServerHTTPDebug() bool {
 	return obj.Server.HTTPDebug
 }
 
+// ServerRTSPPort read HTTP Port options
+func (obj *StorageST) ServerRTSPPort() string {
+	obj.mutex.RLock()
+	defer obj.mutex.RUnlock()
+	return obj.Server.RTSPPort
+}
+
 // ServerHTTPPort read HTTP Port options
 func (obj *StorageST) ServerHTTPPort() string {
 	obj.mutex.RLock()
@@ -297,10 +305,43 @@ func (obj *StorageST) ServerHTTPDemo() bool {
 	return obj.Server.HTTPDemo
 }
 
-var (
-	//Default www static file dir
-	DefaultHTTPDir = "web"
-)
+// ServerICEServers read ICE servers
+func (obj *StorageST) ServerICEServers() []string {
+	obj.mutex.Lock()
+	defer obj.mutex.Unlock()
+	return obj.Server.ICEServers
+}
+
+// ServerICEServers read ICE username
+func (obj *StorageST) ServerICEUsername() string {
+	obj.mutex.Lock()
+	defer obj.mutex.Unlock()
+	return obj.Server.ICEUsername
+}
+
+// ServerICEServers read ICE credential
+func (obj *StorageST) ServerICECredential() string {
+	obj.mutex.Lock()
+	defer obj.mutex.Unlock()
+	return obj.Server.ICECredential
+}
+
+// ServerWebRTCPortMin read WebRTC Port Min
+func (obj *StorageST) ServerWebRTCPortMin() uint16 {
+	obj.mutex.Lock()
+	defer obj.mutex.Unlock()
+	return obj.Server.WebRTCPortMin
+}
+
+// ServerWebRTCPortMax read WebRTC Port Max
+func (obj *StorageST) ServerWebRTCPortMax() uint16 {
+	obj.mutex.Lock()
+	defer obj.mutex.Unlock()
+	return obj.Server.WebRTCPortMax
+}
+
+// Default www static file dir
+var DefaultHTTPDir = "web"
 
 // ServerHTTPDir
 func (obj *StorageST) ServerHTTPDir() string {
@@ -352,6 +393,302 @@ func (obj *StorageST) ServerHTTPSPort() string {
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
 	return obj.Server.HTTPSPort
+}
+
+// StreamsList list all stream
+func (obj *StorageST) StreamsList() map[string]StreamST {
+	obj.mutex.RLock()
+	defer obj.mutex.RUnlock()
+	tmp := make(map[string]StreamST)
+	for i, i2 := range obj.Streams {
+		tmp[i] = i2
+	}
+	return tmp
+}
+
+// StreamAdd add stream
+func (obj *StorageST) StreamAdd(uuid string, val StreamST) error {
+	obj.mutex.Lock()
+	defer obj.mutex.Unlock()
+	// TODO create empty map bug save https://github.com/liip/sheriff empty not nil map[] != {} json
+	// data, err := sheriff.Marshal(&sheriff.Options{
+	//		Groups:     []string{"config"},
+	//		ApiVersion: v2,
+	//	}, obj)
+	// Not Work map[] != {}
+	if obj.Streams == nil {
+		obj.Streams = make(map[string]StreamST)
+	}
+	if _, ok := obj.Streams[uuid]; ok {
+		return ErrorStreamAlreadyExists
+	}
+	for i, i2 := range val.Channels {
+		i2 = obj.StreamChannelMake(i2)
+		if !i2.OnDemand {
+			i2.runLock = true
+			val.Channels[i] = i2
+			go StreamServerRunStreamDo(uuid, i)
+		} else {
+			val.Channels[i] = i2
+		}
+	}
+	obj.Streams[uuid] = val
+	err := obj.SaveConfig()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (obj *StorageST) SaveConfig() error {
+	utils.Logger.Debugln("Saving configuration to", configFile)
+	v2, err := version.NewVersion("2.0.0")
+	if err != nil {
+		return err
+	}
+	data, err := sheriff.Marshal(&sheriff.Options{
+		Groups:     []string{"config"},
+		ApiVersion: v2,
+	}, obj)
+	if err != nil {
+		return err
+	}
+	res, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(configFile, res, 0o644)
+	if err != nil {
+		utils.Logger.Errorln(err.Error())
+		return err
+	}
+	return nil
+}
+
+// StreamChannelMake check stream exist
+func (obj *StorageST) StreamChannelMake(val ChannelST) ChannelST {
+	channel := obj.ChannelDefaults
+	if err := mergo.Merge(&channel, val); err != nil {
+		// Just ignore the default values and continue
+		channel = val
+		utils.Logger.Errorln(err.Error())
+	}
+	// make client's
+	channel.clients = make(map[string]ClientST)
+	// make last ack
+	channel.ack = time.Now().Add(-255 * time.Hour)
+	// make hls buffer
+	channel.hlsSegmentBuffer = make(map[int]SegmentOld)
+	// make signals buffer chain
+	channel.signals = make(chan int, 100)
+	return channel
+}
+
+// StreamEdit edit stream
+func (obj *StorageST) StreamEdit(uuid string, val StreamST) error {
+	obj.mutex.Lock()
+	defer obj.mutex.Unlock()
+	if tmp, ok := obj.Streams[uuid]; ok {
+		for i, i2 := range tmp.Channels {
+			if i2.runLock {
+				tmp.Channels[i] = i2
+				obj.Streams[uuid] = tmp
+				i2.signals <- SignalStreamStop
+			}
+		}
+		for i3, i4 := range val.Channels {
+			i4 = obj.StreamChannelMake(i4)
+			if !i4.OnDemand {
+				i4.runLock = true
+				val.Channels[i3] = i4
+				go StreamServerRunStreamDo(uuid, i3)
+			} else {
+				val.Channels[i3] = i4
+			}
+		}
+		obj.Streams[uuid] = val
+		err := obj.SaveConfig()
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	return ErrorStreamNotFound
+}
+
+// StreamDelete stream
+func (obj *StorageST) StreamDelete(uuid string) error {
+	obj.mutex.Lock()
+	defer obj.mutex.Unlock()
+	if tmp, ok := obj.Streams[uuid]; ok {
+		for _, i2 := range tmp.Channels {
+			if i2.runLock {
+				i2.signals <- SignalStreamStop
+			}
+		}
+		delete(obj.Streams, uuid)
+		err := obj.SaveConfig()
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	return ErrorStreamNotFound
+}
+
+// StreamReload reload stream
+func (obj *StorageST) StreamReload(uuid string) error {
+	obj.mutex.RLock()
+	defer obj.mutex.RUnlock()
+	if tmp, ok := obj.Streams[uuid]; ok {
+		for _, i2 := range tmp.Channels {
+			if i2.runLock {
+				i2.signals <- SignalStreamRestart
+			}
+		}
+		return nil
+	}
+	return ErrorStreamNotFound
+}
+
+// StreamInfo return stream info
+func (obj *StorageST) StreamInfo(uuid string) (*StreamST, error) {
+	obj.mutex.RLock()
+	defer obj.mutex.RUnlock()
+	if tmp, ok := obj.Streams[uuid]; ok {
+		return &tmp, nil
+	}
+	return nil, ErrorStreamNotFound
+}
+
+// StreamChannelAdd add stream
+func (obj *StorageST) StreamChannelAdd(uuid string, channelID string, val ChannelST) error {
+	obj.mutex.Lock()
+	defer obj.mutex.Unlock()
+	if _, ok := obj.Streams[uuid]; !ok {
+		return ErrorStreamNotFound
+	}
+	if _, ok := obj.Streams[uuid].Channels[channelID]; ok {
+		return ErrorStreamChannelAlreadyExists
+	}
+	val = obj.StreamChannelMake(val)
+	obj.Streams[uuid].Channels[channelID] = val
+	if !val.OnDemand {
+		val.runLock = true
+		go StreamServerRunStreamDo(uuid, channelID)
+	}
+	err := obj.SaveConfig()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// StreamChannelDelete stream
+func (obj *StorageST) StreamChannelDelete(uuid string, channelID string) error {
+	obj.mutex.Lock()
+	defer obj.mutex.Unlock()
+	if tmp, ok := obj.Streams[uuid]; ok {
+		if channelTmp, ok := tmp.Channels[channelID]; ok {
+			if channelTmp.runLock {
+				channelTmp.signals <- SignalStreamStop
+			}
+			delete(obj.Streams[uuid].Channels, channelID)
+			err := obj.SaveConfig()
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+	}
+	return ErrorStreamNotFound
+}
+
+// StreamEdit edit stream
+func (obj *StorageST) StreamChannelEdit(uuid string, channelID string, val ChannelST) error {
+	obj.mutex.Lock()
+	defer obj.mutex.Unlock()
+	if tmp, ok := obj.Streams[uuid]; ok {
+		if currentChannel, ok := tmp.Channels[channelID]; ok {
+			if currentChannel.runLock {
+				currentChannel.signals <- SignalStreamStop
+			}
+			val = obj.StreamChannelMake(val)
+			obj.Streams[uuid].Channels[channelID] = val
+			if !val.OnDemand {
+				val.runLock = true
+				go StreamServerRunStreamDo(uuid, channelID)
+			}
+			err := obj.SaveConfig()
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+	}
+	return ErrorStreamNotFound
+}
+
+// StreamChannelExist check stream exist
+func (obj *StorageST) StreamChannelExist(streamID string, channelID string) bool {
+	obj.mutex.Lock()
+	defer obj.mutex.Unlock()
+	if streamTmp, ok := obj.Streams[streamID]; ok {
+		if channelTmp, ok := streamTmp.Channels[channelID]; ok {
+			channelTmp.ack = time.Now()
+			streamTmp.Channels[channelID] = channelTmp
+			obj.Streams[streamID] = streamTmp
+			return ok
+		}
+	}
+	return false
+}
+
+// StreamChannelCodecs get stream codec storage or wait
+func (obj *StorageST) StreamChannelCodecs(streamID string, channelID string) ([]av.CodecData, error) {
+	for i := 0; i < 100; i++ {
+		obj.mutex.RLock()
+		tmp, ok := obj.Streams[streamID]
+		obj.mutex.RUnlock()
+		if !ok {
+			return nil, ErrorStreamNotFound
+		}
+		channelTmp, ok := tmp.Channels[channelID]
+		if !ok {
+			return nil, ErrorStreamChannelNotFound
+		}
+
+		if channelTmp.codecs != nil {
+			return channelTmp.codecs, nil
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+	return nil, ErrorStreamChannelCodecNotFound
+}
+
+// StreamInfo return stream info
+func (obj *StorageST) StreamChannelInfo(uuid string, channelID string) (*ChannelST, error) {
+	obj.mutex.RLock()
+	defer obj.mutex.RUnlock()
+	if tmp, ok := obj.Streams[uuid]; ok {
+		if channelTmp, ok := tmp.Channels[channelID]; ok {
+			return &channelTmp, nil
+		}
+	}
+	return nil, ErrorStreamNotFound
+}
+
+// StreamChannelReload reload stream
+func (obj *StorageST) StreamChannelReload(uuid string, channelID string) error {
+	obj.mutex.RLock()
+	defer obj.mutex.RUnlock()
+	if tmp, ok := obj.Streams[uuid]; ok {
+		if channelTmp, ok := tmp.Channels[channelID]; ok {
+			channelTmp.signals <- SignalStreamRestart
+			return nil
+		}
+	}
+	return ErrorStreamNotFound
 }
 
 // NewHLSMuxer Segments
@@ -482,6 +819,96 @@ func (element *MuxerHLS) PlaylistUpdate() {
 }
 
 func (element *MuxerHLS) Close() {
+}
+
+// GetIndexM3u8 func
+func (element *MuxerHLS) GetIndexM3u8(needMSN int, needPart int) (string, error) {
+	element.mutex.Lock()
+	if len(element.CacheM3U8) != 0 && ((needMSN == -1 || needPart == -1) || (needMSN-element.MSN > 1) || (needMSN == element.MSN && needPart < element.CurrentFragmentID)) {
+		element.mutex.Unlock()
+		return element.CacheM3U8, nil
+	} else {
+		element.mutex.Unlock()
+		index, err := element.WaitIndex(time.Second*3, needMSN, needPart)
+		if err != nil {
+			return "", err
+		}
+		return index, err
+	}
+}
+
+// WaitIndex func
+func (element *MuxerHLS) WaitIndex(timeOut time.Duration, segment, fragment int) (string, error) {
+	for {
+		select {
+		case <-time.After(timeOut):
+			return "", ErrorStreamNotFound
+		case <-element.FragmentCtx.Done():
+			element.mutex.Lock()
+			if element.MSN < segment || (element.MSN == segment && element.CurrentFragmentID < fragment) {
+				utils.Logger.Infoln("wait req", element.MSN, element.CurrentFragmentID, segment, fragment)
+				element.mutex.Unlock()
+				continue
+			}
+			element.mutex.Unlock()
+			return element.CacheM3U8, nil
+		}
+	}
+}
+
+// GetSegment func
+func (element *MuxerHLS) GetSegment(segment int) ([]*av.Packet, error) {
+	element.mutex.Lock()
+	defer element.mutex.Unlock()
+	if segmentTmp, ok := element.Segments[segment]; ok && len(segmentTmp.Fragment) > 0 {
+		var res []*av.Packet
+		for _, v := range element.SortFragment(segmentTmp.Fragment) {
+			res = append(res, segmentTmp.Fragment[v].Packets...)
+		}
+		return res, nil
+	}
+	return nil, ErrorStreamNotFound
+}
+
+// GetFragment func
+func (element *MuxerHLS) GetFragment(segment int, fragment int) ([]*av.Packet, error) {
+	element.mutex.Lock()
+	if segmentTmp, segmentTmpOK := element.Segments[segment]; segmentTmpOK {
+		if fragmentTmp, fragmentTmpOK := segmentTmp.Fragment[fragment]; fragmentTmpOK {
+			if fragmentTmp.Finish {
+				element.mutex.Unlock()
+				return fragmentTmp.Packets, nil
+			} else {
+				element.mutex.Unlock()
+				pck, err := element.WaitFragment(time.Second*1, segment, fragment)
+				if err != nil {
+					return nil, err
+				}
+				return pck, err
+			}
+		}
+	}
+	element.mutex.Unlock()
+	return nil, ErrorStreamNotFound
+}
+
+// WaitFragment func
+func (element *MuxerHLS) WaitFragment(timeOut time.Duration, segment, fragment int) ([]*av.Packet, error) {
+	select {
+	case <-time.After(timeOut):
+		return nil, ErrorStreamNotFound
+	case <-element.FragmentCtx.Done():
+		element.mutex.Lock()
+		defer element.mutex.Unlock()
+		if segmentTmp, segmentTmpOK := element.Segments[segment]; segmentTmpOK {
+			if fragmentTmp, fragmentTmpOK := segmentTmp.Fragment[fragment]; fragmentTmpOK {
+				if fragmentTmp.Finish {
+					return fragmentTmp.Packets, nil
+				}
+			}
+		}
+		return nil, ErrorStreamNotFound
+	}
 }
 
 // GetDuration func

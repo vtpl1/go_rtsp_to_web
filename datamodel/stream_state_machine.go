@@ -179,14 +179,15 @@ func StreamServerRunStreamDo(streamID string, channelID string) {
 	}()
 	for {
 		utils.Logger.Info("Run stream")
-		opt, err := Storage.StreamChannelControl(streamID, channelID)
-		status, err = StreamServerRunStream(streamID, channelID, opt)
+		opt, _ := Storage.StreamChannelControl(streamID, channelID)
+		status, err := StreamServerRunStream(streamID, channelID, opt)
 		if status > 0 {
 			utils.Logger.Info("Stream exit by signal or not client")
 			return
 		}
 		if err != nil {
-			utils.Logger.Error("Stream error restart stream", err)
+			utils.Logger.Errorln("Stream error restart stream", err)
+			return
 		}
 		time.Sleep(2 * time.Second)
 	}

@@ -23,7 +23,7 @@ func main() {
 	// go http.ListenAndServe(":8080", router)
 
 	go HTTPAPIServer()
-
+	go RTSPServer()
 	go datamodel.Storage.StreamChannelRunAll()
 
 	signalChanel := make(chan os.Signal, 1)

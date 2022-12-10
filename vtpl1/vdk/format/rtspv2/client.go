@@ -18,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vtpl1/vdk"
 	"github.com/vtpl1/vdk/av"
 	"github.com/vtpl1/vdk/codec"
 	"github.com/vtpl1/vdk/codec/aacparser"
@@ -205,8 +206,8 @@ func (client *RTSPClient) request(method string, customHeaders map[string]string
 		}
 		if val, ok := res["WWW-Authenticate"]; ok {
 			if strings.Contains(val, "Digest") {
-				client.realm = stringInBetween(val, "realm=\"", "\"")
-				client.nonce = stringInBetween(val, "nonce=\"", "\"")
+				client.realm = vdk.StringInBetween(val, "realm=\"", "\"")
+				client.nonce = vdk.StringInBetween(val, "nonce=\"", "\"")
 				client.clientDigest = true
 			} else if strings.Contains(val, "Basic") {
 				client.headers["Authorization"] = "Basic " + base64.StdEncoding.EncodeToString([]byte(client.username+":"+client.password))
@@ -263,7 +264,7 @@ func (client *RTSPClient) request(method string, customHeaders map[string]string
 			}
 		}
 		if method == SETUP {
-			// deep := stringInBetween(builder.String(), "interleaved=", ";")
+			// deep := vdk.StringInBetween(builder.String(), "interleaved=", ";")
 			if val, ok := res["Transport"]; ok {
 				splits2 := strings.Split(val, ";")
 				for _, vs := range splits2 {
@@ -284,20 +285,6 @@ func (client *RTSPClient) request(method string, customHeaders map[string]string
 		client.Println(builder.String())
 	}
 	return
-}
-
-func stringInBetween(str string, start string, end string) (result string) {
-	s := strings.Index(str, start)
-	if s == -1 {
-		return
-	}
-	str = str[s+len(start):]
-	e := strings.Index(str, end)
-	if e == -1 {
-		return
-	}
-	str = str[:e]
-	return str
 }
 
 func (client *RTSPClient) startStream() {
@@ -378,7 +365,7 @@ func (client *RTSPClient) startStream() {
 				responseTmp = append(responseTmp, oneb...)
 				if (len(responseTmp) > 4 && bytes.Compare(responseTmp[len(responseTmp)-4:], []byte("\r\n\r\n")) == 0) || len(responseTmp) > 768 {
 					if strings.Contains(string(responseTmp), "Content-Length:") {
-						si, err := strconv.Atoi(stringInBetween(string(responseTmp), "Content-Length: ", "\r\n"))
+						si, err := strconv.Atoi(vdk.StringInBetween(string(responseTmp), "Content-Length: ", "\r\n"))
 						if err != nil {
 							client.Println("RTSP Client RTP Read Keep-Alive Content-Length", err)
 							return
