@@ -10,6 +10,7 @@ import (
 	"github.com/vtpl1/vdk/av"
 	"github.com/vtpl1/vdk/format/rtmp"
 	"github.com/vtpl1/vdk/format/rtspv2"
+	"github.com/vtpl1/vdk/format/vtplgrpc"
 )
 
 // StreamServerRunStreamDo stream run do mux
@@ -61,6 +62,127 @@ func StreamServerRunStreamDo(streamID string, channelID string) {
 }
 
 // StreamServerRunStream core stream
+func StreamServerRunStreamGrpc(streamID string, channelID string, opt *ChannelST) (int, error) {
+	if url, err := url.Parse(opt.URL); err == nil && strings.ToLower(url.Scheme) == "rtmp" {
+		return StreamServerRunStreamRTMP(streamID, channelID, opt)
+	}
+	keyTest := time.NewTimer(20 * time.Second)
+	checkClients := time.NewTimer(20 * time.Second)
+	var start bool
+	var fps int
+	preKeyTS := time.Duration(0)
+	var Seq []*av.Packet
+	GRPCLient, err := vtplgrpc.Dial(vtplgrpc.GRPCLientOptions{URL: opt.URL, InsecureSkipVerify: opt.InsecureSkipVerify, DisableAudio: !opt.Audio, DialTimeout: 3 * time.Second, ReadWriteTimeout: 5 * time.Second, Debug: opt.Debug, OutgoingProxy: true})
+	if err != nil {
+		return 0, err
+	}
+	Storage.StreamChannelStatus(streamID, channelID, ONLINE)
+	defer func() {
+		GRPCLient.Close()
+		Storage.StreamChannelStatus(streamID, channelID, OFFLINE)
+		Storage.StreamHLSFlush(streamID, channelID)
+	}()
+	var WaitCodec bool
+	/*
+		Example wait codec
+	*/
+	if GRPCLient.WaitCodec {
+		WaitCodec = true
+	} else {
+		if len(GRPCLient.CodecData) > 0 {
+			Storage.StreamChannelCodecsUpdate(streamID, channelID, GRPCLient.CodecData, GRPCLient.SDPRaw)
+		}
+	}
+	log.WithFields(logrus.Fields{
+		"module":  "core",
+		"stream":  streamID,
+		"channel": channelID,
+		"func":    "StreamServerRunStream",
+		"call":    "Start",
+	}).Infoln("Success connection RTSP")
+	var ProbeCount int
+	var ProbeFrame int
+	var ProbePTS time.Duration
+	Storage.NewHLSMuxer(streamID, channelID)
+	defer Storage.HLSMuxerClose(streamID, channelID)
+	for {
+		select {
+		// Check stream have clients
+		case <-checkClients.C:
+			if opt.OnDemand && !Storage.ClientHas(streamID, channelID) {
+				return 1, ErrorStreamNoClients
+			}
+			checkClients.Reset(20 * time.Second)
+		// Check stream send key
+		case <-keyTest.C:
+			return 0, ErrorStreamNoVideo
+		// Read core signals
+		case signals := <-opt.signals:
+			switch signals {
+			case SignalStreamStop:
+				return 2, ErrorStreamStopCoreSignal
+			case SignalStreamRestart:
+				return 0, ErrorStreamRestart
+			case SignalStreamClient:
+				return 1, ErrorStreamNoClients
+			}
+		// Read rtsp signals
+		case signals := <-GRPCLient.Signals:
+			switch signals {
+			case rtspv2.SignalCodecUpdate:
+				Storage.StreamChannelCodecsUpdate(streamID, channelID, GRPCLient.CodecData, GRPCLient.SDPRaw)
+				WaitCodec = false
+			case rtspv2.SignalStreamRTPStop:
+				return 0, ErrorStreamStopRTSPSignal
+			}
+		case packetRTP := <-GRPCLient.OutgoingProxyQueue:
+			Storage.StreamChannelCastProxy(streamID, channelID, packetRTP)
+		case packetAV := <-GRPCLient.OutgoingPacketQueue:
+			if WaitCodec {
+				continue
+			}
+
+			if packetAV.IsKeyFrame {
+				keyTest.Reset(20 * time.Second)
+				if preKeyTS > 0 {
+					Storage.StreamHLSAdd(streamID, channelID, Seq, packetAV.Time-preKeyTS)
+					Seq = []*av.Packet{}
+				}
+				preKeyTS = packetAV.Time
+			}
+			Seq = append(Seq, packetAV)
+			Storage.StreamChannelCast(streamID, channelID, packetAV)
+			/*
+			   HLS LL Test
+			*/
+			if packetAV.IsKeyFrame && !start {
+				start = true
+			}
+			/*
+				FPS mode probe
+			*/
+			if start {
+				ProbePTS += packetAV.Duration
+				ProbeFrame++
+				if packetAV.IsKeyFrame && ProbePTS.Seconds() >= 1 {
+					ProbeCount++
+					if ProbeCount == 2 {
+						fps = int(math.Round(float64(ProbeFrame) / ProbePTS.Seconds()))
+					}
+					ProbeFrame = 0
+					ProbePTS = 0
+				}
+			}
+			if start && fps != 0 {
+				// TODO fix it
+				packetAV.Duration = time.Duration((float32(1000)/float32(fps))*1000*1000) * time.Nanosecond
+				Storage.HlsMuxerSetFPS(streamID, channelID, fps)
+				Storage.HlsMuxerWritePacket(streamID, channelID, packetAV)
+			}
+		}
+	}
+}
+
 func StreamServerRunStream(streamID string, channelID string, opt *ChannelST) (int, error) {
 	if url, err := url.Parse(opt.URL); err == nil && strings.ToLower(url.Scheme) == "rtmp" {
 		return StreamServerRunStreamRTMP(streamID, channelID, opt)

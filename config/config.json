@@ -27,9 +27,9 @@
         "27aec28e-6181-4753-9acd-0456a75f0289": {
             "channels": {
                 "0": {
-                    "url": "rtsp://admin:AdmiN1234@172.16.0.35:554/video1",
-                    "debug": false,
-                    "audio": true
+                    "url": "rtsp://root:AdmiN1234@172.16.0.92/axis-media/media.amp?videocodec=h264",
+                    "debug": true,
+                    "audio": false
                 }
             },
             "name": "111111111"
