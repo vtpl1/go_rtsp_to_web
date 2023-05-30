@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.data_models_stream.StreamService";
+option go_package = "vtpl1/vdk/format/vtplgrpc";
+option java_outer_classname = "StreamServiceProto";
+option objc_class_prefix = "SS";
+
+package data_models_stream;
+
+service StreamService
+{
+  rpc WriteFrame(stream WriteFrameRequest) returns (WriteFrameResponse) {}
+  rpc ReadFrame(ReadFrameRequest) returns (stream ReadFrameResponse) {}
+}
+
+message Frame
+{
+  int32 media_type = 1;
+  int32 frame_type = 2;
+  int64 time_stamp = 3;
+  int32 bit_rate = 4;
+  int32 fps = 5;
+  bool motion_available = 6;
+  int32 major_minor = 7;
+  int32 channel_id = 8;
+  int32 app_id = 9;
+  int32 ssrc = 10;
+  int64 frame_id = 11;
+  int32 buffer_size = 12;
+  bytes buffer = 13;
+}
+
+message WriteFrameRequest { Frame frame = 1; }
+
+message WriteFrameResponse
+{
+  int32 channel_id = 1;
+  int32 app_id = 2;
+  int32 major_minor = 3;
+  int64 error_code = 4;
+  string error_message = 5;
+  int64 exit_code = 6;
+}
+
+message ReadFrameRequest
+{
+  int32 channel_id = 1;
+  int32 app_id = 2;
+  int32 major_minor = 3;
+  int64 error_code = 4;
+  string error_message = 5;
+  int64 exit_code = 6;
+}
+
+message ReadFrameResponse { Frame frame = 1; }

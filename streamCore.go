@@ -63,9 +63,6 @@ func StreamServerRunStreamDo(streamID string, channelID string) {
 
 // StreamServerRunStream core stream
 func StreamServerRunStreamGrpc(streamID string, channelID string, opt *ChannelST) (int, error) {
-	if url, err := url.Parse(opt.URL); err == nil && strings.ToLower(url.Scheme) == "rtmp" {
-		return StreamServerRunStreamRTMP(streamID, channelID, opt)
-	}
 	keyTest := time.NewTimer(20 * time.Second)
 	checkClients := time.NewTimer(20 * time.Second)
 	var start bool
@@ -99,7 +96,7 @@ func StreamServerRunStreamGrpc(streamID string, channelID string, opt *ChannelST
 		"channel": channelID,
 		"func":    "StreamServerRunStream",
 		"call":    "Start",
-	}).Infoln("Success connection RTSP")
+	}).Infoln("Success connection GRPC")
 	var ProbeCount int
 	var ProbeFrame int
 	var ProbePTS time.Duration
@@ -129,14 +126,14 @@ func StreamServerRunStreamGrpc(streamID string, channelID string, opt *ChannelST
 		// Read rtsp signals
 		case signals := <-GRPCLient.Signals:
 			switch signals {
-			case rtspv2.SignalCodecUpdate:
+			case vtplgrpc.SignalGrpcCodecUpdate:
 				Storage.StreamChannelCodecsUpdate(streamID, channelID, GRPCLient.CodecData, GRPCLient.SDPRaw)
 				WaitCodec = false
-			case rtspv2.SignalStreamRTPStop:
+			case vtplgrpc.SignalStreamGrpcStop:
 				return 0, ErrorStreamStopRTSPSignal
 			}
-		case packetRTP := <-GRPCLient.OutgoingProxyQueue:
-			Storage.StreamChannelCastProxy(streamID, channelID, packetRTP)
+		// case packetRTP := <-GRPCLient.OutgoingProxyQueue:
+		// 	Storage.StreamChannelCastProxy(streamID, channelID, packetRTP)
 		case packetAV := <-GRPCLient.OutgoingPacketQueue:
 			if WaitCodec {
 				continue
@@ -184,9 +181,15 @@ func StreamServerRunStreamGrpc(streamID string, channelID string, opt *ChannelST
 }
 
 func StreamServerRunStream(streamID string, channelID string, opt *ChannelST) (int, error) {
-	if url, err := url.Parse(opt.URL); err == nil && strings.ToLower(url.Scheme) == "rtmp" {
-		return StreamServerRunStreamRTMP(streamID, channelID, opt)
-	}
+	url, err := url.Parse(opt.URL);
+	if err == nil {
+		if strings.ToLower(url.Scheme) == "rtmp" {
+			return StreamServerRunStreamRTMP(streamID, channelID, opt)
+		} else if strings.ToLower(url.Scheme) == "grpc" {
+			return StreamServerRunStreamGrpc(streamID, channelID, opt)
+		}
+
+	} 
 	keyTest := time.NewTimer(20 * time.Second)
 	checkClients := time.NewTimer(20 * time.Second)
 	var start bool
